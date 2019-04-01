@@ -125,7 +125,7 @@ func CalculateReplicas(alert *requests.PrometheusInnerAlert, currentReplicas uin
 	status := alert.Status
 	if status == "firing" {
 		//判断是扩容还是缩容
-		if alert.Labels.Scale == "scale" && scaleStep > 0{
+		if alert.Labels.Scale == "up" && scaleStep > 0{
 			//扩容策略
 			if currentReplicas + scaleStep > maxReplicas {
 				newReplicas = maxReplicas
