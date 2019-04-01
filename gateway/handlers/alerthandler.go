@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
 	"fmt"
 
 	"github.com/openfaas/faas/gateway/requests"
@@ -89,6 +88,7 @@ func handleAlerts(req *requests.PrometheusAlert, service ServiceQuery) []error {
 	return errors
 }
 
+//modified by Xavier，modify scale policy
 func scaleService(alert requests.PrometheusInnerAlert, service ServiceQuery) error {
 	var err error
 	serviceName := alert.Labels.FunctionName
@@ -117,21 +117,25 @@ func scaleService(alert requests.PrometheusInnerAlert, service ServiceQuery) err
 // CalculateReplicas decides what replica count to set depending on current/desired amount
 func CalculateReplicas(status string, currentReplicas uint64, maxReplicas uint64, minReplicas uint64, scalingFactor uint64) uint64 {
 	newReplicas := currentReplicas
-	step := uint64((float64(maxReplicas) / 100) * float64(scalingFactor))
-
+	//step := uint64(math.Ceil(float64(maxReplicas) / 100 * float64(scalingFactor)))
 	if status == "firing" {
-		if currentReplicas == 1 {
-			newReplicas = step
-		} else {
-			if currentReplicas+step > maxReplicas {
-				newReplicas = maxReplicas
-			} else {
-				newReplicas = currentReplicas + step
-			}
-		}
-	} else { // Resolved event.
-		newReplicas = minReplicas
+
 	}
+	//step := uint64((float64(maxReplicas) / 100) * float64(scalingFactor))
+
+	//if status == "firing" {
+	//	if currentReplicas == 1 {
+	//		newReplicas = step
+	//	} else {
+	//		if currentReplicas+step > maxReplicas {
+	//			newReplicas = maxReplicas
+	//		} else {
+	//			newReplicas = currentReplicas + step
+	//		}
+	//	}
+	//} else { // Resolved event.
+	//	newReplicas = minReplicas
+	//}
 
 	return newReplicas
 }
