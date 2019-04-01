@@ -7,6 +7,7 @@ package requests
 type PrometheusInnerAlertLabel struct {
 	AlertName    string `json:"alertname"`
 	FunctionName string `json:"function_name"`
+	Scale		 string `json:"scale"`
 }
 
 // PrometheusInnerAlert PrometheusInnerAlert
