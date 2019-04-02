@@ -39,12 +39,14 @@ func NewExporter(options MetricOptions, credentials *auth.BasicAuthCredentials) 
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.metricOptions.GatewayFunctionInvocation.Describe(ch)
 	e.metricOptions.GatewayFunctionsHistogram.Describe(ch)
+	e.metricOptions.GatewayFunctionRequest.Describe(ch)
 	e.metricOptions.ServiceReplicasGauge.Describe(ch)
 }
 
 // Collect collects data to be consumed by prometheus
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.metricOptions.GatewayFunctionInvocation.Collect(ch)
+	e.metricOptions.GatewayFunctionRequest.Collect(ch)
 	e.metricOptions.GatewayFunctionsHistogram.Collect(ch)
 
 	e.metricOptions.ServiceReplicasGauge.Reset()
