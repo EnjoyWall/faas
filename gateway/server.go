@@ -63,6 +63,9 @@ func main() {
 	prometheusNotifier := handlers.PrometheusFunctionNotifier{
 		Metrics: &metricsOptions,
 	}
+	prometheusBeforeReturnNofitier := handlers.PrometheusFunctionBeforeReturnNotifier{
+		Metrics: &metricsOptions,
+	}
 	functionNotifiers := []handlers.HTTPNotifier{loggingNotifier, prometheusNotifier}
 	forwardingNotifiers := []handlers.HTTPNotifier{loggingNotifier}
 
@@ -78,8 +81,9 @@ func main() {
 		functionURLResolver = urlResolver
 		functionURLTransformer = nilURLTransformer
 	}
-
-	faasHandlers.Proxy = handlers.MakeForwardingProxyHandler(reverseProxy, functionNotifiers, functionURLResolver, functionURLTransformer)
+    //modified by Xavier, 函数的处理增加了一个promethuse的数据上报
+	faasHandlers.Proxy = handlers.MakeFunctionForwardingProxyHandler(reverseProxy, prometheusBeforeReturnNofitier, functionNotifiers, functionURLResolver, functionURLTransformer)
+	//faasHandlers.Proxy = handlers.MakeForwardingProxyHandler(reverseProxy, functionNotifiers, functionURLResolver, functionURLTransformer)
 
 	faasHandlers.RoutelessProxy = handlers.MakeForwardingProxyHandler(reverseProxy, forwardingNotifiers, urlResolver, nilURLTransformer)
 	faasHandlers.ListFunctions = handlers.MakeForwardingProxyHandler(reverseProxy, forwardingNotifiers, urlResolver, nilURLTransformer)
