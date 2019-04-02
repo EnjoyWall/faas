@@ -41,7 +41,7 @@ func BuildMetricsOptions() MetricOptions {
 	gatewayFunctionRequest := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "gateway_function_request_total",
-			Help: "Individual function metrics",
+			Help: "Individual function metrics without returnCode",
 		},
 		[]string{"function_name"},
 	)
