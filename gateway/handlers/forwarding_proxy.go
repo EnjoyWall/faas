@@ -190,7 +190,7 @@ func (p PrometheusFunctionNotifier) Notify(method string, URL string, originalUR
 
 func (p PrometheusFunctionBeforeReturnNotifier) Notify(originalURL string) {
 	serviceName := getServiceName(originalURL)
-	log.Printf("Before return, promethuse scrape data from function s%" , serviceName)
+	log.Printf("Before return, promethuse scrape data from function %s" , serviceName)
 	p.Metrics.GatewayFunctionRequest.With(prometheus.Labels{"function_name": serviceName}).Inc()
 }
 
