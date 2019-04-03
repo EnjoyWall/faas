@@ -18,6 +18,7 @@ import (
 	"github.com/openfaas/faas/gateway/types"
 	natsHandler "github.com/openfaas/nats-queue-worker/handler"
 	_ "net/http/pprof"
+	"net/http/pprof"
 )
 
 func main() {
@@ -190,6 +191,13 @@ func main() {
 
 	r.Handle("/", http.RedirectHandler("/ui/", http.StatusMovedPermanently)).Methods(http.MethodGet)
 
+	//增加调试工具
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
 	tcpPort := 8080
 
 	s := &http.Server{
@@ -202,5 +210,7 @@ func main() {
 
 	log.Fatal(s.ListenAndServe())
 	//开启pprof监听端口
-	http.ListenAndServe("0.0.0.0:6060", nil)
+	//http.ListenAndServe("0.0.0.0:6060", r)
+	// 启动一个自定义mux的http服务器
+
 }
