@@ -17,6 +17,7 @@ import (
 	"github.com/openfaas/faas/gateway/plugin"
 	"github.com/openfaas/faas/gateway/types"
 	natsHandler "github.com/openfaas/nats-queue-worker/handler"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -200,4 +201,6 @@ func main() {
 	}
 
 	log.Fatal(s.ListenAndServe())
+	//开启pprof监听端口
+	http.ListenAndServe("0.0.0.0:6060", nil)
 }
