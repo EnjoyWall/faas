@@ -17,6 +17,8 @@ import (
 	"github.com/openfaas/faas/gateway/scaling"
 	"github.com/openfaas/faas/gateway/types"
 	natsHandler "github.com/openfaas/nats-queue-worker/handler"
+	"net/http/pprof"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -63,8 +65,13 @@ func main() {
 	prometheusNotifier := handlers.PrometheusFunctionNotifier{
 		Metrics: &metricsOptions,
 	}
+
 	prometheusServiceNotifier := handlers.PrometheusServiceNotifier{
 		ServiceMetrics: metricsOptions.ServiceMetrics,
+	}
+
+	prometheusBeforeReturnNofitier := handlers.PrometheusFunctionBeforeReturnNotifier{
+		Metrics: &metricsOptions,
 	}
 
 	functionNotifiers := []handlers.HTTPNotifier{loggingNotifier, prometheusNotifier}
@@ -82,8 +89,9 @@ func main() {
 		functionURLResolver = urlResolver
 		functionURLTransformer = nilURLTransformer
 	}
-
-	faasHandlers.Proxy = handlers.MakeForwardingProxyHandler(reverseProxy, functionNotifiers, functionURLResolver, functionURLTransformer)
+	//modified by Xavier, 函数的处理增加了一个promethuse的数据上报
+	faasHandlers.Proxy = handlers.MakeFunctionForwardingProxyHandler(reverseProxy, prometheusBeforeReturnNofitier, functionNotifiers, functionURLResolver, functionURLTransformer)
+	//faasHandlers.Proxy = handlers.MakeForwardingProxyHandler(reverseProxy, functionNotifiers, functionURLResolver, functionURLTransformer)
 
 	faasHandlers.RoutelessProxy = handlers.MakeForwardingProxyHandler(reverseProxy, forwardingNotifiers, urlResolver, nilURLTransformer)
 	faasHandlers.ListFunctions = handlers.MakeForwardingProxyHandler(reverseProxy, forwardingNotifiers, urlResolver, nilURLTransformer)
@@ -212,6 +220,13 @@ func main() {
 
 	r.Handle("/", http.RedirectHandler("/ui/", http.StatusMovedPermanently)).Methods(http.MethodGet)
 
+	//增加调试工具
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
 	tcpPort := 8080
 
 	s := &http.Server{
@@ -223,4 +238,8 @@ func main() {
 	}
 
 	log.Fatal(s.ListenAndServe())
+	//开启pprof监听端口
+	//http.ListenAndServe("0.0.0.0:6060", r)
+	// 启动一个自定义mux的http服务器
+
 }

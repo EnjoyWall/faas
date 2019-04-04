@@ -51,7 +51,36 @@ func MakeForwardingProxyHandler(proxy *types.HTTPClientReverseProxy, notifiers [
 		originalURL := r.URL.String()
 
 		requestURL := urlPathTransformer.Transform(r)
+		start := time.Now()
 
+		statusCode, err := forwardRequest(w, r, proxy.Client, baseURL, requestURL, proxy.Timeout, writeRequestURI)
+
+		seconds := time.Since(start)
+		if err != nil {
+			log.Printf("error with upstream request to: %s, %s\n", requestURL, err.Error())
+		}
+
+		for _, notifier := range notifiers {
+			notifier.Notify(r.Method, requestURL, originalURL, statusCode, seconds)
+		}
+	}
+}
+
+func MakeFunctionForwardingProxyHandler(proxy *types.HTTPClientReverseProxy, beforeReturnNofitier PrometheusFunctionBeforeReturnNotifier,
+	notifiers []HTTPNotifier, baseURLResolver BaseURLResolver, urlPathTransformer URLPathTransformer) http.HandlerFunc {
+
+	writeRequestURI := false
+	if _, exists := os.LookupEnv("write_request_uri"); exists {
+		writeRequestURI = exists
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		baseURL := baseURLResolver.Resolve(r)
+		originalURL := r.URL.String()
+
+		requestURL := urlPathTransformer.Transform(r)
+		//在此处加一个promethuse的数据处理
+		beforeReturnNofitier.Notify(originalURL)
 		start := time.Now()
 
 		statusCode, err := forwardRequest(w, r, proxy.Client, baseURL, requestURL, proxy.Timeout, writeRequestURI)

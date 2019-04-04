@@ -21,6 +21,16 @@ type PrometheusServiceNotifier struct {
 	ServiceMetrics *metrics.ServiceMetricOptions
 }
 
+type PrometheusFunctionBeforeReturnNotifier struct {
+	Metrics *metrics.MetricOptions
+}
+
+func (p PrometheusFunctionBeforeReturnNotifier) Notify(originalURL string) {
+	serviceName := getServiceName(originalURL)
+	log.Printf("Before return, promethuse scrape data from function %s", serviceName)
+	p.Metrics.GatewayFunctionRequest.With(prometheus.Labels{"function_name": serviceName}).Inc()
+}
+
 // Notify about service metrics
 func (psn PrometheusServiceNotifier) Notify(method string, URL string, originalURL string, statusCode int, duration time.Duration) {
 	code := fmt.Sprintf("%d", statusCode)

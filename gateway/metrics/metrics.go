@@ -14,6 +14,7 @@ import (
 // MetricOptions to be used by web handlers
 type MetricOptions struct {
 	GatewayFunctionInvocation *prometheus.CounterVec
+	GatewayFunctionRequest    *prometheus.CounterVec
 	GatewayFunctionsHistogram *prometheus.HistogramVec
 	ServiceReplicasGauge      *prometheus.GaugeVec
 	ServiceMetrics            *ServiceMetricOptions
@@ -55,6 +56,15 @@ func BuildMetricsOptions() MetricOptions {
 		[]string{"function_name", "code"},
 	)
 
+	//新建promethuse指标
+	gatewayFunctionRequest := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "gateway_function_request_total",
+			Help: "Individual function metrics without returnCode",
+		},
+		[]string{"function_name"},
+	)
+
 	serviceReplicas := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "gateway_service_count",
@@ -89,6 +99,7 @@ func BuildMetricsOptions() MetricOptions {
 	metricsOptions := MetricOptions{
 		GatewayFunctionsHistogram: gatewayFunctionsHistogram,
 		GatewayFunctionInvocation: gatewayFunctionInvocation,
+		GatewayFunctionRequest:    gatewayFunctionRequest,
 		ServiceReplicasGauge:      serviceReplicas,
 		ServiceMetrics:            serviceMetricOptions,
 	}
